@@ -1,0 +1,20 @@
+
+//x0 - tag for P20
+var data = x0.GetHistory(60).ToList();//архив за 60 дней
+double p0 = 0; 	//давление 60 дней назад
+if(data.Count>0)
+{
+    var dayThreshold=data.Max(i=>i.Time).Subtract(TimeSpan.FromDays(1));  
+    var lastDay=data.Where(i=>i.Time>dayThreshold).ToList(); //ограничение архива данными за 60й день  
+    if(lastDay.Count>0)
+    {
+        var dayAverage = lastDay.Average(i=>i.Value);       //среднее за день (выбросы есть)
+        p0 = dayAverage > 0 ? dayAverage : 0;
+    }
+}
+
+var p1 = x0.RollingAverage(24); //среднее без выбросов
+ 
+var v = (p0*10000 - p1*10000)/(60*10000); // скорость утечки за 60 дней
+//утечка в год на такой скорости
+return v*365; 
